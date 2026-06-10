@@ -1,0 +1,104 @@
+///////////////////////////////////////////////////////////////////////////////////////////////
+// BEGIN EDITS ////////////////////////////////////////////////////////////////////////////////
+
+const TEMPLATE_FILE_ID = '1qUjmAtK727fvZvXxregTbFv09AZlWzP2voPYX2Le21A';
+const DESTINATION_FOLDER_ID = '18V_T1d9_ht_EOYTq_R7X2oS-Uq4sygu4';
+
+// END EDITS //////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////
+// WARNING: EDITING ANYTHING BELOW THIS LINE WILL CHANGE THE BEHAVIOR OF THE SCRIPT. //////////
+// DO SO AT YOUR OWN RISK. 
+Pleace Contact - Duurahesh@outlook.com & Tel No. 0766529578////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////
+
+// Format datetimes to: YYYY-MM-DD
+function toDateFmt(dt_string) {
+  var millis = Date.parse(dt_string);
+  var date = new Date(millis);
+  var year = date.getFullYear();
+  var month = ("0" + (date.getMonth() + 1)).slice(-2);
+  var day = ("0" + date.getDate()).slice(-2);
+
+  return `${year}-${month}-${day}`;
+}
+
+// Parse and extract the data submitted through the form.
+function parseFormData(values, header) {
+  var response_data = {};
+
+  for (var i = 0; i < values.length; i++) {
+    var key = header[i];
+    var value = values[i];
+
+    // Format date fields
+    if (key.toLowerCase().includes("date")) {
+      value = toDateFmt(value);
+    }
+
+    response_data[key] = value;
+  }
+
+  return response_data;
+}
+
+// Helper function to inject data into the template
+function populateTemplate(document, response_data) {
+
+  // Get the document header and body
+  var document_header = document.getHeader();
+  var document_body = document.getBody();
+
+  // Replace variables in the header and body
+  for (var key in response_data) {
+    var match_text = `{{${key}}}`;
+    var value = response_data[key];
+
+    if (document_header) {
+      document_header.replaceText(match_text, String(value));
+    }
+
+    document_body.replaceText(match_text, String(value));
+  }
+}
+
+// Function to populate the template form
+function createDocFromForm() {
+
+  // Get active sheet
+  var sheet = SpreadsheetApp.getActiveSheet();
+
+  // Get last submitted row
+  var last_row = sheet.getLastRow() - 1;
+
+  // Get all spreadsheet data
+  var range = sheet.getDataRange();
+  var values = range.getValues();
+
+  // Latest form response
+  var data = values[last_row];
+
+  // Spreadsheet headers
+  var headers = values[0];
+
+  // Parse form data
+  var response_data = parseFormData(data, headers);
+
+  // Retrieve template file and destination folder
+  var template_file = DriveApp.getFileById(TEMPLATE_FILE_ID);
+  var target_folder = DriveApp.getFolderById(DESTINATION_FOLDER_ID);
+
+  // Create filename
+  var filename = `${response_data["Index No"]}`;
+
+  // Make copy of template
+  var document_copy = template_file.makeCopy(filename, target_folder);
+
+  // Open copied document
+  var document = DocumentApp.openById(document_copy.getId());
+
+  // Populate template and save
+  populateTemplate(document, response_data);
+  document.saveAndClose();
+
+  Logger.log("Document created: " + filename);
+}
