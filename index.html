@@ -1,524 +1,115 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="si">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-  <title>Mail Merge DOCX Generator | Auto-save form to Word document</title>
-  <!-- Include FileSaver.js for easy blob saving -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
-  <!-- Include JSZip for DOCX generation (required by docx library) -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-  <!-- Docx library: generate professional .docx files from template -->
-  <script src="https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.min.js"></script>
-  <style>
-    * {
-      box-sizing: border-box;
-      font-family: system-ui, 'Segoe UI', 'Inter', 'Helvetica Neue', sans-serif;
-    }
-    body {
-      background: linear-gradient(145deg, #e9eef3 0%, #dce3ec 100%);
-      margin: 0;
-      min-height: 100vh;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      padding: 24px;
-    }
-    .card {
-      max-width: 860px;
-      width: 100%;
-      background: rgba(255,255,255,0.97);
-      backdrop-filter: blur(2px);
-      border-radius: 2rem;
-      box-shadow: 0 20px 40px rgba(0,0,0,0.15), 0 4px 12px rgba(0,0,0,0.05);
-      overflow: hidden;
-      transition: all 0.2s;
-    }
-    .hero {
-      background: #1e3c72;
-      background: linear-gradient(135deg, #0b2b44 0%, #1b4f7a 100%);
-      padding: 1.5rem 2rem;
-      color: white;
-    }
-    .hero h1 {
-      margin: 0;
-      font-weight: 700;
-      font-size: 1.9rem;
-      letter-spacing: -0.3px;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-    .hero h1 small {
-      font-size: 0.9rem;
-      font-weight: 400;
-      background: #ffd966aa;
-      background: rgba(255,217,102,0.2);
-      padding: 4px 12px;
-      border-radius: 40px;
-      margin-left: 12px;
-    }
-    .hero p {
-      opacity: 0.85;
-      margin: 0.5rem 0 0;
-      font-size: 0.95rem;
-    }
-    .form-container {
-      padding: 2rem 2rem 1.8rem;
-    }
-    .form-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 1.2rem 1.8rem;
-    }
-    .full-width {
-      grid-column: span 2;
-    }
-    .field {
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-    }
-    .field label {
-      font-weight: 600;
-      font-size: 0.85rem;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      color: #1f3a5f;
-    }
-    .field label i {
-      font-weight: normal;
-      color: #e06c3e;
-    }
-    input, textarea, select {
-      padding: 12px 14px;
-      border: 1px solid #cbd5e1;
-      border-radius: 18px;
-      font-size: 0.95rem;
-      transition: 0.2s;
-      background: white;
-      outline: none;
-      font-family: inherit;
-    }
-    input:focus, textarea:focus, select:focus {
-      border-color: #2c6e9e;
-      box-shadow: 0 0 0 3px rgba(44,110,158,0.2);
-    }
-    textarea {
-      resize: vertical;
-      min-height: 85px;
-    }
-    button {
-      background: #1f6392;
-      color: white;
-      border: none;
-      padding: 14px 24px;
-      font-size: 1rem;
-      font-weight: 600;
-      border-radius: 40px;
-      cursor: pointer;
-      transition: all 0.2s;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 12px;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.05);
-    }
-    button:hover {
-      background: #0b4a6e;
-      transform: translateY(-2px);
-      box-shadow: 0 10px 18px rgba(0,0,0,0.1);
-    }
-    .action-bar {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: space-between;
-      align-items: center;
-      margin-top: 32px;
-      gap: 16px;
-      border-top: 1px solid #e2edf2;
-      padding-top: 24px;
-    }
-    .status {
-      background: #ecfdf5;
-      border-radius: 60px;
-      padding: 10px 18px;
-      font-size: 0.85rem;
-      color: #0b5e42;
-      font-weight: 500;
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      flex: 1;
-    }
-    .status.error {
-      background: #fff0f0;
-      color: #b91c1c;
-    }
-    .btn-outline {
-      background: transparent;
-      border: 1px solid #cbd5e1;
-      color: #1f3a5f;
-      box-shadow: none;
-    }
-    .btn-outline:hover {
-      background: #f1f5f9;
-      transform: none;
-    }
-    footer {
-      background: #f8fafc;
-      padding: 0.9rem 2rem;
-      text-align: center;
-      font-size: 0.75rem;
-      color: #4b6a8b;
-      border-top: 1px solid #e2edf2;
-    }
-    @media (max-width: 650px) {
-      .form-grid {
-        grid-template-columns: 1fr;
-        gap: 1rem;
-      }
-      .full-width {
-        grid-column: span 1;
-      }
-      .form-container {
-        padding: 1.5rem;
-      }
-      .hero h1 {
-        font-size: 1.5rem;
-      }
-    }
-    .badge-demo {
-      background: #eef2ff;
-      border-radius: 24px;
-      padding: 4px 10px;
-      font-size: 0.7rem;
-      font-weight: 500;
-      color: #1f6392;
-    }
-  </style>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cashier QR Scanner</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <script src="https://unpkg.com/html5-qrcode"></script>
 </head>
-<body>
-<div class="card">
-  <div class="hero">
-    <h1>
-      📄 Mail Merge · DOCX Studio
-      <small>Like MS Word merge</small>
-    </h1>
-    <p>Fill the form below → Generate professional .docx file → Auto‑download (saved locally). Since GitHub Pages hosts only static sites, the generated file is instantly saved to your device — just like automatic folder saving. You can later upload to your repo.</p>
-  </div>
-  <div class="form-container">
-    <form id="mergeForm">
-      <div class="form-grid">
-        <div class="field">
-          <label>👤 Full Name <i>(merge field)</i></label>
-          <input type="text" id="fullName" placeholder="e.g., Olivia Chen" value="Olivia Chen" required>
-        </div>
-        <div class="field">
-          <label>📧 Email Address</label>
-          <input type="email" id="email" placeholder="client@example.com" value="olivia.chen@example.com" required>
-        </div>
-        <div class="field">
-          <label>🏢 Company / Organization</label>
-          <input type="text" id="company" placeholder="Acme Inc." value="Nexus Dynamics">
-        </div>
-        <div class="field">
-          <label>📅 Date</label>
-          <input type="date" id="date" value="2026-06-10">
-        </div>
-        <div class="field full-width">
-          <label>✉️ Message / Purpose <i>(custom paragraph)</i></label>
-          <textarea id="message" placeholder="Type your custom message or offer...">Thank you for your collaboration! We are pleased to present our quarterly report and upcoming opportunities. Looking forward to your feedback.</textarea>
-        </div>
-        <div class="field full-width">
-          <label>🏷️ Additional merge note (optional signature)</label>
-          <input type="text" id="signature" placeholder="e.g., Sales Director, Best Regards" value="James Rodriguez, Head of Operations">
-        </div>
-      </div>
+<body class="bg-light p-3">
+  <div class="container bg-white p-4 rounded shadow" style="max-width: 500px;">
+    
+    <!-- Login Section -->
+    <div id="loginArea">
+      <h4 class="text-center mb-3">Cashier Login</h4>
+      <input type="text" id="user" class="form-control mb-2" placeholder="Username">
+      <input type="password" id="pass" class="form-control mb-3" placeholder="Password">
+      <button onclick="login()" class="btn btn-success w-100">Login</button>
+    </div>
+
+    <!-- Scanner Section -->
+    <div id="mainArea" style="display:none;">
+      <h4 class="text-center text-primary">Cashier Dashboard</h4>
+      <hr>
       
-      <div class="action-bar">
-        <div class="status" id="statusMsg">
-          ⚡ Ready | Click "Generate & Save DOCX"
-        </div>
-        <div style="display: flex; gap: 12px;">
-          <button type="button" id="resetBtn" class="btn-outline">⟳ Reset form</button>
-          <button type="submit" id="generateBtn">📑 Generate DOCX & Auto‑Save</button>
+      <!-- Camera Element -->
+      <div id="reader" class="border rounded bg-dark" style="width:100%; min-height: 250px;"></div>
+      
+      <input type="text" id="scannedNic" class="form-control my-3" placeholder="Scanned NIC / Manual Entry">
+      <button onclick="searchCustomer()" class="btn btn-secondary w-100 mb-3">Find Customer</button>
+
+      <!-- Customer Details -->
+      <div id="customerDetails" style="display:none;" class="p-3 border rounded bg-warning bg-opacity-10">
+        <h6>Customer Details</h6>
+        <p class="mb-1"><strong>Name:</strong> <span id="cName"></span></p>
+        <p class="mb-3"><strong>Current Points:</strong> <span id="cPoints" class="badge bg-danger fs-6"></span></p>
+        
+        <div class="input-group">
+          <input type="number" id="pointsToAdd" class="form-control" placeholder="Points ගණන">
+          <button onclick="addPoints()" class="btn btn-primary">Add Points</button>
         </div>
       </div>
-    </form>
-    <div style="margin-top: 20px; font-size: 0.8rem; background: #f1f5f9; border-radius: 20px; padding: 12px 16px; display: flex; gap: 12px; flex-wrap: wrap; align-items: center;">
-      <span class="badge-demo">📌 Mail‑Merge fields demo</span>
-      <span style="color:#2c3e66;">Docx template includes: «Name», «Company», «Email», «Date», «Message», «Signature» — fully replaced with your inputs.</span>
     </div>
   </div>
-  <footer>
-    💾 GitHub Pages compatible: file automatically downloaded to "Downloads" folder. You can manually commit generated .docx files to your repository if needed.
-  </footer>
-</div>
 
-<script>
-  // Wait for docx & FileSaver & DOM ready
-  (function() {
-    // Helper: get form data object
-    function getFormData() {
-      return {
-        fullName: document.getElementById('fullName').value.trim() || "Guest",
-        email: document.getElementById('email').value.trim() || "no-reply@example.com",
-        company: document.getElementById('company').value.trim() || "Not specified",
-        date: document.getElementById('date').value || new Date().toISOString().slice(0,10),
-        message: document.getElementById('message').value.trim() || "No additional message.",
-        signature: document.getElementById('signature').value.trim() || "Team Manager"
-      };
+  <script>
+    // ⚠️ ඔයාගේ GOOGLE APPS SCRIPT WEB APP URL එක මෙතනට දාන්න
+    const API_URL = "https://script.google.com/macros/s/AKfycbzlvRdso5M6_Cbt7Ygn6qxEEaxADnWbao_KZkcKy5kvVEu9dvX-ouk81DLtefgLhjWe/exec"; 
+    let html5QrcodeScanner;
+
+    function login() {
+      var u = document.getElementById('user').value;
+      var p = document.getElementById('pass').value;
+      
+      fetch(API_URL, {
+        method: "POST",
+        body: JSON.stringify({ action: "checkLogin", username: u, password: p, role: "cashier" })
+      })
+      .then(res => res.json())
+      .then(res => {
+        if(res.success) {
+          document.getElementById('loginArea').style.display = 'none';
+          document.getElementById('mainArea').style.display = 'block';
+          startScanner();
+        } else { alert("Login Failed!"); }
+      }).catch(err => alert("Error: " + err));
     }
 
-    // Reset form to default sample values (mail-merge demo)
-    function resetFormToDefault() {
-      document.getElementById('fullName').value = "Olivia Chen";
-      document.getElementById('email').value = "olivia.chen@example.com";
-      document.getElementById('company').value = "Nexus Dynamics";
-      // set today's date in YYYY-MM-DD
-      const today = new Date().toISOString().slice(0,10);
-      document.getElementById('date').value = today;
-      document.getElementById('message').value = "Thank you for your collaboration! We are pleased to present our quarterly report and upcoming opportunities. Looking forward to your feedback.";
-      document.getElementById('signature').value = "James Rodriguez, Head of Operations";
-      updateStatus("Form reset to default mail-merge sample values", false);
+    function startScanner() {
+      // මෙතනදී කෙලින්ම සැබෑ සර්වර් එකක නිසා කැමරා Permission prompt එක සාර්ථකව ක්‍රියා කරයි
+      html5QrcodeScanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: {width: 250, height: 250} });
+      html5QrcodeScanner.render(onScanSuccess, onScanFailure);
     }
 
-    function updateStatus(msg, isError = false) {
-      const statusDiv = document.getElementById('statusMsg');
-      if (statusDiv) {
-        statusDiv.innerHTML = isError ? `⚠️ ${msg}` : `✅ ${msg}`;
-        if (isError) {
-          statusDiv.classList.add('error');
-        } else {
-          statusDiv.classList.remove('error');
-        }
-        // Auto clear success style after 4 sec but keep message
-        if (!isError) {
-          setTimeout(() => {
-            if (statusDiv && !statusDiv.innerHTML.includes("⚠️")) {
-              statusDiv.classList.remove('error');
-            }
-          }, 4000);
-        }
-      }
-    }
-
-    // Main DOCX generation using docx library (mail merge simulation)
-    async function generateAndSaveDocx() {
-      const data = getFormData();
-      
-      // Validate required fields (simple)
-      if (!data.fullName || data.fullName.length < 1) {
-        updateStatus("Full Name is required for mail merge", true);
-        return;
-      }
-      
-      // Show generating status
-      const statusDiv = document.getElementById('statusMsg');
-      const originalStatus = statusDiv ? statusDiv.innerHTML : "";
-      updateStatus("📄 Generating professional DOCX document (mail merge style)... Please wait", false);
-      
-      try {
-        // Access docx from global (window.docx)
-        const { Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType, BorderStyle, WidthType, Table, TableRow, TableCell, ShadingType } = window.docx;
-        
-        // Build rich content mimicking a mail-merge letter / proposal
-        // 1. Title / Header with company letterhead style
-        const titleParagraph = new Paragraph({
-          text: "📄 OFFICIAL CORRESPONDENCE",
-          heading: HeadingLevel.TITLE,
-          alignment: AlignmentType.CENTER,
-          spacing: { after: 200, before: 200 },
-          style: "Title",
-          children: [
-            new TextRun({ text: "📄 ", bold: false }),
-            new TextRun({ text: "MAIL MERGE DOCUMENT", bold: true, size: 32 })
-          ]
-        });
-        
-        const dateParagraph = new Paragraph({
-          alignment: AlignmentType.RIGHT,
-          spacing: { after: 300 },
-          children: [
-            new TextRun({ text: `Date: ${data.date}`, italics: true, size: 22 })
-          ]
-        });
-        
-        // Recipient block (like merge fields)
-        const recipientParagraph = new Paragraph({
-          spacing: { before: 120, after: 80 },
-          children: [
-            new TextRun({ text: "To: ", bold: true, size: 24 }),
-            new TextRun({ text: `${data.fullName}`, bold: true, underline: true, size: 24 }),
-            new TextRun({ text: `\nEmail: ${data.email}`, size: 22 }),
-            new TextRun({ text: `\nCompany: ${data.company}`, size: 22 })
-          ]
-        });
-        
-        // Salutation with merge field style
-        const salutation = new Paragraph({
-          spacing: { before: 200, after: 120 },
-          children: [
-            new TextRun({ text: `Dear ${data.fullName},`, bold: true, size: 24 })
-          ]
-        });
-        
-        // Body content: merge message and custom message
-        const introText = `We appreciate your engagement with our platform. This document has been generated automatically based on the information you provided — similar to a classic Microsoft Word mail merge operation. Below are the details of your request / proposal:`;
-        
-        const introPara = new Paragraph({
-          spacing: { after: 160 },
-          children: [new TextRun({ text: introText, size: 23 })]
-        });
-        
-        // Merge highlight: company & email & date
-        const mergeDetails = new Paragraph({
-          border: { bottom: { style: BorderStyle.SINGLE, size: 1, color: "CCCCCC" }, top: { style: BorderStyle.SINGLE, size: 1, color: "CCCCCC" } },
-          shading: { type: ShadingType.CLEAR, fill: "F5F9FF" },
-          spacing: { before: 120, after: 120 },
-          children: [
-            new TextRun({ text: "⚡ MAIL MERGE FIELDS RESOLVED: ", bold: true, size: 22 }),
-            new TextRun({ text: `Name = ${data.fullName}  |  Company = ${data.company}  |  Email = ${data.email}`, size: 22 })
-          ]
-        });
-        
-        // Message block (custom content)
-        const messageHeading = new Paragraph({
-          children: [new TextRun({ text: "✉️ Message content:", bold: true, size: 24 })],
-          spacing: { before: 180, after: 60 }
-        });
-        
-        const messagePara = new Paragraph({
-          spacing: { after: 200 },
-          children: [new TextRun({ text: data.message, size: 23, italics: false })]
-        });
-        
-        // Additional note / signature block with mail-merge style
-        const closingPara = new Paragraph({
-          spacing: { before: 180, after: 40 },
-          children: [new TextRun({ text: "Sincerely,", size: 23 })]
-        });
-        
-        const signaturePara = new Paragraph({
-          spacing: { after: 100 },
-          children: [
-            new TextRun({ text: data.signature, bold: true, size: 24, color: "1F4E79" }),
-            new TextRun({ text: `\nGenerated via Web Mail Merge (GitHub Pages)`, size: 18, italics: true })
-          ]
-        });
-        
-        // Optional table to display merge summary nicely
-        const table = new Table({
-          width: { size: 100, type: WidthType.PERCENTAGE },
-          rows: [
-            new TableRow({
-              children: [
-                new TableCell({ children: [new Paragraph({ children: [new TextRun({ text: "Merge Field", bold: true }) })] }, { shading: { fill: "E2E8F0" } }),
-                new TableCell({ children: [new Paragraph({ children: [new TextRun({ text: "Value", bold: true }) })] }, { shading: { fill: "E2E8F0" } })
-              ]
-            }),
-            new TableRow({ children: [ new TableCell({ children: [new Paragraph("Full Name")] }), new TableCell({ children: [new Paragraph(data.fullName)] }) ] }),
-            new TableRow({ children: [ new TableCell({ children: [new Paragraph("Company")] }), new TableCell({ children: [new Paragraph(data.company)] }) ] }),
-            new TableRow({ children: [ new TableCell({ children: [new Paragraph("Email")] }), new TableCell({ children: [new Paragraph(data.email)] }) ] }),
-            new TableRow({ children: [ new TableCell({ children: [new Paragraph("Date")] }), new TableCell({ children: [new Paragraph(data.date)] }) ] }),
-          ]
-        });
-        
-        const tableCaption = new Paragraph({
-          spacing: { before: 200, after: 40 },
-          children: [new TextRun({ text: "📊 Merged Fields Summary Table", bold: true, size: 21 })]
-        });
-        
-        // Build final document
-        const doc = new Document({
-          styles: {
-            default: { document: { run: { font: "Calibri", size: 24 } } },
-          },
-          sections: [{
-            properties: {},
-            children: [
-              titleParagraph,
-              dateParagraph,
-              recipientParagraph,
-              salutation,
-              introPara,
-              mergeDetails,
-              messageHeading,
-              messagePara,
-              tableCaption,
-              table,
-              closingPara,
-              signaturePara,
-              new Paragraph({ children: [new TextRun({ text: "\n✅ Document auto‑generated by Mail Merge web tool — similar to MS Word merge fields.", size: 19, color: "2C6E9E" })] })
-            ]
-          }]
-        });
-        
-        // Generate blob using Packer
-        const blob = await Packer.toBlob(doc);
-        // Generate filename based on name + date + mailmerge
-        const safeName = data.fullName.replace(/[^a-z0-9]/gi, '_').substring(0, 30);
-        const timestamp = new Date().toISOString().slice(0,19).replace(/:/g, '-');
-        const fileName = `MailMerge_${safeName}_${timestamp}.docx`;
-        
-        // Auto-save to local 'Downloads' folder (like saving to hosting folder locally)
-        // Using FileSaver.js to trigger save-as dialog. Since GH Pages does not allow server-side folder writes,
-        // this downloads automatically. User can later drag-and-drop into GitHub repo if needed.
-        saveAs(blob, fileName);
-        
-        // Success message
-        updateStatus(`✅ DOCX generated & saved as "${fileName}" — automatically downloaded (equivalent to saving in hosting folder). Mail merge success!`, false);
-        
-        // Additional console log
-        console.log(`[MailMerge] Document created and saved: ${fileName}`, data);
-      } catch (err) {
-        console.error("DOCX generation error:", err);
-        updateStatus(`Error: ${err.message || "Failed to create docx. Check console."}`, true);
-      }
+    function onScanSuccess(decodedText) {
+      document.getElementById('scannedNic').value = decodedText;
+      searchCustomer();
     }
     
-    // Reset event
-    document.getElementById('resetBtn').addEventListener('click', (e) => {
-      e.preventDefault();
-      resetFormToDefault();
-    });
-    
-    // Form submit handler (generate and save)
-    const form = document.getElementById('mergeForm');
-    form.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      await generateAndSaveDocx();
-    });
-    
-    // Also attach to generate btn manually as extra safety
-    const genBtn = document.getElementById('generateBtn');
-    if (genBtn) {
-      genBtn.addEventListener('click', async (e) => {
-        e.preventDefault();
-        await generateAndSaveDocx();
+    function onScanFailure(error) { // නිකන්ම skip කරන්න }
+
+    function searchCustomer() {
+      var nic = document.getElementById('scannedNic').value;
+      fetch(`${API_URL}?action=getCustomerDetails&nic=${nic}`)
+      .then(res => res.json())
+      .then(res => {
+        if(res.success) {
+          document.getElementById('cName').innerText = res.name;
+          document.getElementById('cPoints').innerText = res.points;
+          document.getElementById('customerDetails').style.display = 'block';
+        } else { alert(res.message); }
       });
     }
-    
-    // Set default date if empty
-    const dateField = document.getElementById('date');
-    if (dateField && !dateField.value) {
-      const today = new Date().toISOString().slice(0,10);
-      dateField.value = today;
-    }
-    
-    // Add instruction update after load
-    updateStatus("Ready: fill form & click generate → DOCX auto-downloads (mail merge style)", false);
-    
-    // Optional validation tooltip
-    const fullNameInput = document.getElementById('fullName');
-    if (fullNameInput) {
-      fullNameInput.addEventListener('blur', () => {
-        if (!fullNameInput.value.trim()) updateStatus("Full Name required for mail merge", true);
-        else updateStatus("Form valid, ready to generate", false);
+
+    function addPoints() {
+      var nic = document.getElementById('scannedNic').value;
+      var pts = document.getElementById('pointsToAdd').value;
+      if(!pts) return alert("Points ඇතුලත් කරන්න!");
+
+      fetch(API_URL, {
+        method: "POST",
+        body: JSON.stringify({ action: "addPoints", nic: nic, pointsToAdd: pts })
+      })
+      .then(res => res.json())
+      .then(res => {
+        if(res.success) {
+          alert("Points සාර්ථකව එකතු කලා!");
+          document.getElementById('cPoints').innerText = res.newPoints;
+          document.getElementById('pointsToAdd').value = '';
+        }
       });
     }
-  })();
-</script>
+  </script>
 </body>
 </html>
