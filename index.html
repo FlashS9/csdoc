@@ -15,7 +15,7 @@
       <h4 class="text-center mb-3">Cashier Login</h4>
       <input type="text" id="user" class="form-control mb-2" placeholder="Username">
       <input type="password" id="pass" class="form-control mb-3" placeholder="Password">
-      <button onclick="login()" class="btn btn-success w-100">Login</button>
+      <button onclick="login()" class="btn btn-success w-100" id="loginBtn">Login</button>
     </div>
 
     <!-- Scanner Section -->
@@ -27,7 +27,7 @@
       <div id="reader" class="border rounded bg-dark" style="width:100%; min-height: 250px;"></div>
       
       <input type="text" id="scannedNic" class="form-control my-3" placeholder="Scanned NIC / Manual Entry">
-      <button onclick="searchCustomer()" class="btn btn-secondary w-100 mb-3">Find Customer</button>
+      <button onclick="searchCustomer()" class="btn btn-secondary w-100 mb-3" id="findBtn">Find Customer</button>
 
       <!-- Customer Details -->
       <div id="customerDetails" style="display:none;" class="p-3 border rounded bg-warning bg-opacity-10">
@@ -37,37 +37,70 @@
         
         <div class="input-group">
           <input type="number" id="pointsToAdd" class="form-control" placeholder="Points ගණන">
-          <button onclick="addPoints()" class="btn btn-primary">Add Points</button>
+          <button onclick="addPoints()" class="btn btn-primary" id="addBtn">Add Points</button>
         </div>
       </div>
     </div>
   </div>
 
   <script>
-    // ⚠️ ඔයාගේ GOOGLE APPS SCRIPT WEB APP URL එක මෙතනට දාන්න
+    // ⚠️ ඔයාගේ අලුත් GOOGLE APPS SCRIPT WEB APP URL එක මෙතනට දාන්න (අගට /exec තියෙන්න ඕන)
     const API_URL = "https://script.google.com/macros/s/AKfycbzlvRdso5M6_Cbt7Ygn6qxEEaxADnWbao_KZkcKy5kvVEu9dvX-ouk81DLtefgLhjWe/exec"; 
     let html5QrcodeScanner;
+
+    // සර්වර් එකෙන් එන දත්ත බාරගන්නා Functions
+    function handleLoginResponse(res) {
+      document.getElementById('loginBtn').innerText = "Login";
+      if(res.success) {
+        document.getElementById('loginArea').style.style.display = 'none';
+        document.getElementById('mainArea').style.display = 'block';
+        startScanner();
+      } else {
+        alert("Login Failed! Username හෝ Password වැරදියි.");
+      }
+    }
+
+    function handleCustomerResponse(res) {
+      document.getElementById('findBtn').innerText = "Find Customer";
+      if(res.success) {
+        document.getElementById('cName').innerText = res.name;
+        document.getElementById('cPoints').innerText = res.points;
+        document.getElementById('customerDetails').style.display = 'block';
+      } else {
+        alert(res.message);
+      }
+    }
+
+    function handleAddPointsResponse(res) {
+      document.getElementById('addBtn').innerText = "Add Points";
+      if(res.success) {
+        alert("Points සාර්ථකව එකතු කලා!");
+        document.getElementById('cPoints').innerText = res.newPoints;
+        document.getElementById('pointsToAdd').value = '';
+      } else {
+        alert("Points එකතු කිරීම අසාර්ථකයි.");
+      }
+    }
+
+    // සර්වර් එකට දත්ත යවන පොදු function එක (JSONP)
+    function sendRequest(url, callbackName) {
+      let script = document.createElement('script');
+      script.src = url + "&callback=" + callbackName + "&ts=" + new Date().getTime();
+      document.body.appendChild(script);
+      document.body.removeChild(script); // run වුනාට පස්සේ clean කරනවා
+    }
 
     function login() {
       var u = document.getElementById('user').value;
       var p = document.getElementById('pass').value;
+      if(!u || !p) return alert("Username සහ Password ඇතුලත් කරන්න!");
       
-      fetch(API_URL, {
-        method: "POST",
-        body: JSON.stringify({ action: "checkLogin", username: u, password: p, role: "cashier" })
-      })
-      .then(res => res.json())
-      .then(res => {
-        if(res.success) {
-          document.getElementById('loginArea').style.display = 'none';
-          document.getElementById('mainArea').style.display = 'block';
-          startScanner();
-        } else { alert("Login Failed!"); }
-      }).catch(err => alert("Error: " + err));
+      document.getElementById('loginBtn').innerText = "Connecting...";
+      var url = API_URL + "?action=checkLogin&username=" + encodeURIComponent(u) + "&password=" + encodeURIComponent(p) + "&role=cashier";
+      sendRequest(url, "handleLoginResponse");
     }
 
     function startScanner() {
-      // මෙතනදී කෙලින්ම සැබෑ සර්වර් එකක නිසා කැමරා Permission prompt එක සාර්ථකව ක්‍රියා කරයි
       html5QrcodeScanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: {width: 250, height: 250} });
       html5QrcodeScanner.render(onScanSuccess, onScanFailure);
     }
@@ -77,19 +110,15 @@
       searchCustomer();
     }
     
-    function onScanFailure(error) { // නිකන්ම skip කරන්න }
+    function onScanFailure(error) { }
 
     function searchCustomer() {
       var nic = document.getElementById('scannedNic').value;
-      fetch(`${API_URL}?action=getCustomerDetails&nic=${nic}`)
-      .then(res => res.json())
-      .then(res => {
-        if(res.success) {
-          document.getElementById('cName').innerText = res.name;
-          document.getElementById('cPoints').innerText = res.points;
-          document.getElementById('customerDetails').style.display = 'block';
-        } else { alert(res.message); }
-      });
+      if(!nic) return alert("NIC එක ඇතුලත් කරන්න!");
+      
+      document.getElementById('findBtn').innerText = "Searching...";
+      var url = API_URL + "?action=getCustomerDetails&nic=" + encodeURIComponent(nic);
+      sendRequest(url, "handleCustomerResponse");
     }
 
     function addPoints() {
@@ -97,18 +126,9 @@
       var pts = document.getElementById('pointsToAdd').value;
       if(!pts) return alert("Points ඇතුලත් කරන්න!");
 
-      fetch(API_URL, {
-        method: "POST",
-        body: JSON.stringify({ action: "addPoints", nic: nic, pointsToAdd: pts })
-      })
-      .then(res => res.json())
-      .then(res => {
-        if(res.success) {
-          alert("Points සාර්ථකව එකතු කලා!");
-          document.getElementById('cPoints').innerText = res.newPoints;
-          document.getElementById('pointsToAdd').value = '';
-        }
-      });
+      document.getElementById('addBtn').innerText = "Updating...";
+      var url = API_URL + "?action=addPoints&nic=" + encodeURIComponent(nic) + "&pointsToAdd=" + encodeURIComponent(pts);
+      sendRequest(url, "handleAddPointsResponse");
     }
   </script>
 </body>
