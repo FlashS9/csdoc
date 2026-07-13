@@ -50,15 +50,16 @@
 
     // සර්වර් එකෙන් එන දත්ත බාරගන්නා Functions
     function handleLoginResponse(res) {
-      document.getElementById('loginBtn').innerText = "Login";
-      if(res.success) {
-        document.getElementById('loginArea').style.style.display = 'none';
-        document.getElementById('mainArea').style.display = 'block';
-        startScanner();
-      } else {
-        alert("Login Failed! Username හෝ Password වැරදියි.");
-      }
-    }
+  document.getElementById('loginBtn').innerText = "Login";
+  if(res.success) {
+    // වැරැද්ද නිවැරදි කර ඇත: .style.display ලෙස වෙනස් කලා
+    document.getElementById('loginArea').style.display = 'none';
+    document.getElementById('mainArea').style.display = 'block';
+    startScanner();
+  } else {
+    alert("Login Failed! Username හෝ Password වැරදියි.");
+  }
+}
 
     function handleCustomerResponse(res) {
       document.getElementById('findBtn').innerText = "Find Customer";
