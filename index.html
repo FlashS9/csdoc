@@ -1,202 +1,275 @@
+<!DOCTYPE html>
+<html lang="si">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cashier Loyalty Portal</title>
+  
+  <!-- Bootstrap 5 CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <!-- HTML5 QR Code Scanner -->
+  <script src="https://unpkg.com/html5-qrcode"></script>
 
-<style>
-* { box-sizing: border-box; margin: 0; padding: 0; }
-body { font-family: var(--font-sans); }
-.screen { display: none; }
-.screen.active { display: block; }
-.app-wrap { max-width: 420px; margin: 0 auto; padding: 1rem; }
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
 
-.login-card {
-  background: var(--surface-2);
-  border: 0.5px solid var(--border);
-  border-radius: 16px;
-  padding: 2rem 1.75rem;
-  margin-top: 2rem;
-}
-.brand-mark {
-  width: 48px; height: 48px; border-radius: 12px;
-  background: var(--fill-accent);
-  display: flex; align-items: center; justify-content: center;
-  margin: 0 auto 1.25rem;
-  color: var(--on-accent);
-  font-size: 22px;
-}
-.login-title { text-align: center; font-size: 18px; font-weight: 500; color: var(--text-primary); margin-bottom: 4px; }
-.login-sub { text-align: center; font-size: 13px; color: var(--text-secondary); margin-bottom: 1.5rem; }
+    .main-card {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      border-radius: 20px;
+      box-shadow: 0 15px 35px rgba(0,0,0,0.3);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      overflow: hidden;
+      width: 100%;
+      max-width: 480px;
+    }
 
-.field-group { display: flex; flex-direction: column; gap: 10px; margin-bottom: 1.25rem; }
-.field-wrap { position: relative; }
-.field-wrap i { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); font-size: 16px; color: var(--text-muted); pointer-events: none; }
-.field-wrap input { width: 100%; padding: 10px 12px 10px 36px; border: 0.5px solid var(--border-strong); border-radius: var(--radius); background: var(--surface-1); color: var(--text-primary); font-size: 14px; }
-.field-wrap input:focus { outline: none; border-color: var(--border-accent); box-shadow: 0 0 0 2px var(--bg-accent); }
+    .card-header-custom {
+      background: linear-gradient(135deg, #4f46e5 0%, #3b82f6 100%);
+      color: white;
+      padding: 25px 20px;
+      text-align: center;
+    }
 
-.btn-primary {
-  width: 100%; padding: 10px; border-radius: var(--radius); border: none;
-  background: var(--fill-accent); color: var(--on-accent);
-  font-size: 14px; font-weight: 500; cursor: pointer;
-}
-.btn-primary:hover { background: var(--fill-accent-hover); }
+    .btn-primary-custom {
+      background: linear-gradient(135deg, #4f46e5 0%, #3b82f6 100%);
+      border: none;
+      border-radius: 10px;
+      padding: 12px;
+      font-weight: 600;
+      transition: all 0.3s ease;
+    }
 
-.dash-header {
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 12px 0; margin-bottom: 1rem;
-  border-bottom: 0.5px solid var(--border);
-}
-.dash-title { font-size: 16px; font-weight: 500; color: var(--text-primary); }
-.dash-badge {
-  font-size: 12px; padding: 3px 10px; border-radius: 20px;
-  background: var(--bg-success); color: var(--text-success);
-  border: 0.5px solid var(--border-success);
-}
+    .btn-primary-custom:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(79, 70, 229, 0.4);
+    }
 
-.scanner-box {
-  background: #0f172a;
-  border-radius: 12px;
-  aspect-ratio: 4/3;
-  display: flex; align-items: center; justify-content: center;
-  position: relative; overflow: hidden; margin-bottom: 1rem;
-}
-.scan-corner { position: absolute; width: 24px; height: 24px; border-color: #38bdf8; border-style: solid; }
-.sc-tl { top: 20px; left: 20px; border-width: 3px 0 0 3px; border-radius: 4px 0 0 0; }
-.sc-tr { top: 20px; right: 20px; border-width: 3px 3px 0 0; border-radius: 0 4px 0 0; }
-.sc-bl { bottom: 20px; left: 20px; border-width: 0 0 3px 3px; border-radius: 0 0 0 4px; }
-.sc-br { bottom: 20px; right: 20px; border-width: 0 3px 3px 0; border-radius: 0 0 4px 0; }
-.scan-line { position: absolute; left: 20px; right: 20px; height: 2px; background: linear-gradient(90deg, transparent, #38bdf8, transparent); animation: scanMove 2s ease-in-out infinite; top: 40px; }
-@keyframes scanMove { 0%,100%{top:25px} 50%{bottom:25px; top:auto} }
-.scan-icon { color: #64748b; text-align: center; }
-.scan-icon i { font-size: 48px; display: block; margin-bottom: 8px; }
-.scan-icon p { font-size: 13px; color: #94a3b8; }
+    #reader {
+      border-radius: 15px !important;
+      overflow: hidden;
+      border: 2px dashed #3b82f6 !important;
+      background: #0f172a;
+    }
 
-.search-row { display: flex; gap: 8px; margin-bottom: 1rem; }
-.search-row input { flex: 1; padding: 10px 12px; border: 0.5px solid var(--border-strong); border-radius: var(--radius); background: var(--surface-1); color: var(--text-primary); font-size: 14px; }
-.search-row input:focus { outline: none; border-color: var(--border-accent); }
-.btn-search { padding: 10px 16px; border-radius: var(--radius); border: 0.5px solid var(--border-strong); background: var(--surface-1); color: var(--text-primary); font-size: 13px; cursor: pointer; white-space: nowrap; }
-.btn-search:hover { background: var(--surface-0); }
+    #reader video {
+      border-radius: 12px;
+    }
 
-.customer-card {
-  background: var(--surface-2); border: 0.5px solid var(--border);
-  border-radius: 12px; overflow: hidden;
-}
-.cust-header { background: var(--bg-accent); border-bottom: 0.5px solid var(--border-accent); padding: 14px 16px; display: flex; align-items: center; gap: 12px; }
-.cust-avatar { width: 40px; height: 40px; border-radius: 50%; background: var(--fill-accent); color: var(--on-accent); display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 500; flex-shrink: 0; }
-.cust-name { font-size: 15px; font-weight: 500; color: var(--text-accent); }
-.cust-nic { font-size: 12px; color: var(--text-accent); opacity: 0.75; }
-.points-row { padding: 14px 16px; display: flex; align-items: center; justify-content: space-between; border-bottom: 0.5px solid var(--border); }
-.points-label { font-size: 13px; color: var(--text-secondary); }
-.points-value { font-size: 24px; font-weight: 500; color: var(--text-primary); }
-.points-unit { font-size: 13px; color: var(--text-muted); margin-left: 4px; }
-.add-row { padding: 14px 16px; display: flex; gap: 8px; align-items: center; }
-.add-row input { flex: 1; padding: 9px 12px; border: 0.5px solid var(--border-strong); border-radius: var(--radius); background: var(--surface-1); color: var(--text-primary); font-size: 14px; }
-.add-row input:focus { outline: none; border-color: var(--border-accent); }
-.btn-add { padding: 9px 18px; border-radius: var(--radius); border: none; background: var(--fill-accent); color: var(--on-accent); font-size: 13px; font-weight: 500; cursor: pointer; white-space: nowrap; }
-.btn-add:hover { background: var(--fill-accent-hover); }
+    .customer-card {
+      background: #f8fafc;
+      border-left: 5px solid #10b981;
+      border-radius: 12px;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    }
 
-.logout-btn { background: none; border: none; color: var(--text-secondary); cursor: pointer; font-size: 13px; display: flex; align-items: center; gap: 4px; }
-.logout-btn:hover { color: var(--text-danger); }
-</style>
+    .points-badge {
+      background: #ef4444;
+      color: white;
+      font-size: 1.2rem;
+      padding: 5px 15px;
+      border-radius: 20px;
+    }
 
-<div class="app-wrap">
-  <h2 class="sr-only">Cashier QR scanner application — login and dashboard</h2>
+    .form-control {
+      border-radius: 10px;
+      padding: 12px;
+      border: 1px solid #cbd5e1;
+    }
 
-  <!-- Login Screen -->
-  <div class="screen active" id="loginScreen">
-    <div class="login-card">
-      <div class="brand-mark"><i class="ti ti-qrcode" aria-hidden="true"></i></div>
-      <p class="login-title">Cashier portal</p>
-      <p class="login-sub">Sign in to your cashier account</p>
-      <div class="field-group">
-        <div class="field-wrap">
-          <i class="ti ti-user" aria-hidden="true"></i>
-          <input type="text" placeholder="Username" id="usernameInput" />
-        </div>
-        <div class="field-wrap">
-          <i class="ti ti-lock" aria-hidden="true"></i>
-          <input type="password" placeholder="Password" id="passwordInput" />
-        </div>
+    .form-control:focus {
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25);
+      border-color: #3b82f6;
+    }
+  </style>
+</head>
+<body class="p-3">
+
+  <div class="main-card my-auto">
+    
+    <!-- LOGIN AREA -->
+    <div id="loginArea">
+      <div class="card-header-custom">
+        <i class="fa-solid fa-user-shield fa-3x mb-2"></i>
+        <h4 class="fw-bold mb-0">Cashier Portal</h4>
+        <small class="text-white-50">Please login to process points</small>
       </div>
-      <button class="btn-primary" onclick="goToDash()">Sign in</button>
+
+      <div class="p-4">
+        <div class="mb-3">
+          <label class="form-label text-secondary fw-semibold">Username</label>
+          <div class="input-group">
+            <span class="input-group-text bg-light"><i class="fa-solid fa-user text-muted"></i></span>
+            <input type="text" id="user" class="form-control" placeholder="Enter username">
+          </div>
+        </div>
+
+        <div class="mb-4">
+          <label class="form-label text-secondary fw-semibold">Password</label>
+          <div class="input-group">
+            <span class="input-group-text bg-light"><i class="fa-solid fa-lock text-muted"></i></span>
+            <input type="password" id="pass" class="form-control" placeholder="Enter password">
+          </div>
+        </div>
+
+        <button onclick="login()" class="btn btn-primary-custom w-100 text-white" id="loginBtn">
+          <i class="fa-solid fa-right-to-bracket me-2"></i>Login
+        </button>
+      </div>
     </div>
+
+    <!-- MAIN DASHBOARD AREA -->
+    <div id="mainArea" style="display:none;">
+      <div class="card-header-custom d-flex justify-content-between align-items-center py-3">
+        <div class="text-start">
+          <h5 class="fw-bold mb-0">Scan QR Code</h5>
+          <small class="text-white-50">Point Reward System</small>
+        </div>
+        <button onclick="location.reload()" class="btn btn-sm btn-outline-light rounded-pill">
+          <i class="fa-solid fa-power-off"></i>
+        </button>
+      </div>
+
+      <div class="p-4">
+        <!-- QR Camera Frame -->
+        <div id="reader" class="mb-3"></div>
+
+        <div class="mb-3">
+          <label class="form-label text-secondary fw-semibold">Customer NIC Number</label>
+          <div class="input-group">
+            <input type="text" id="scannedNic" class="form-control" placeholder="Scanned NIC / Manual Entry">
+            <button onclick="searchCustomer()" class="btn btn-dark px-3" id="findBtn">
+              <i class="fa-solid fa-magnifying-glass"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Customer Details Card -->
+        <div id="customerDetails" style="display:none;" class="customer-card p-3 mb-3">
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <div>
+              <small class="text-muted d-block">Customer Name</small>
+              <h6 class="fw-bold text-dark mb-0" id="cName">-</h6>
+            </div>
+            <div class="text-end">
+              <small class="text-muted d-block">Current Points</small>
+              <span id="cPoints" class="points-badge fw-bold">0</span>
+            </div>
+          </div>
+
+          <hr class="my-2">
+
+          <label class="form-label text-secondary fw-semibold mt-2">Add New Points</label>
+          <div class="input-group">
+            <input type="number" id="pointsToAdd" class="form-control" placeholder="Amount">
+            <button onclick="addPoints()" class="btn btn-success fw-bold px-3" id="addBtn">
+              <i class="fa-solid fa-plus me-1"></i> Add
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
   </div>
 
-  <!-- Dashboard Screen -->
-  <div class="screen" id="dashScreen">
-    <div class="dash-header">
-      <div>
-        <p class="dash-title">Cashier dashboard</p>
-      </div>
-      <div style="display:flex;align-items:center;gap:10px">
-        <span class="dash-badge"><i class="ti ti-circle-check" style="font-size:11px;vertical-align:1px" aria-hidden="true"></i> Online</span>
-        <button class="logout-btn" onclick="goToLogin()"><i class="ti ti-logout" aria-hidden="true"></i> Sign out</button>
-      </div>
-    </div>
+  <script>
+    // ⚠️ ඔයාගේ GOOGLE APPS SCRIPT WEB APP URL එක මෙතනට දාන්න (අගට /exec තියෙන්න ඕන)
+    const API_URL = "https://script.google.com/macros/s/AKfycbzlvRdso5M6_Cbt7Ygn6qxEEaxADnWbao_KZkcKy5kvVEu9dvX-ouk81DLtefgLhjWe/exec"; 
+    let html5QrcodeScanner;
 
-    <!-- Scanner -->
-    <div class="scanner-box">
-      <div class="scan-corner sc-tl"></div>
-      <div class="scan-corner sc-tr"></div>
-      <div class="scan-corner sc-bl"></div>
-      <div class="scan-corner sc-br"></div>
-      <div class="scan-line"></div>
-      <div class="scan-icon">
-        <i class="ti ti-scan" aria-hidden="true"></i>
-        <p>Point camera at QR code</p>
-      </div>
-    </div>
+    function handleLoginResponse(res) {
+      document.getElementById('loginBtn').innerHTML = '<i class="fa-solid fa-right-to-bracket me-2"></i>Login';
+      if(res.success) {
+        document.getElementById('loginArea').style.display = 'none';
+        document.getElementById('mainArea').style.display = 'block';
+        startScanner();
+      } else {
+        alert("Login Failed! Username හෝ Password වැරදියි.");
+      }
+    }
 
-    <!-- Manual Search -->
-    <div class="search-row">
-      <input type="text" placeholder="Enter NIC manually…" id="nicInput" />
-      <button class="btn-search" onclick="showCustomer()"><i class="ti ti-search" style="font-size:14px;vertical-align:-1px" aria-hidden="true"></i> Find</button>
-    </div>
+    function handleCustomerResponse(res) {
+      document.getElementById('findBtn').innerHTML = '<i class="fa-solid fa-magnifying-glass"></i>';
+      if(res.success) {
+        document.getElementById('cName').innerText = res.name;
+        document.getElementById('cPoints').innerText = res.points;
+        document.getElementById('customerDetails').style.display = 'block';
+      } else {
+        alert(res.message);
+        document.getElementById('customerDetails').style.display = 'none';
+      }
+    }
 
-    <!-- Customer Card (hidden initially) -->
-    <div class="customer-card" id="custCard" style="display:none">
-      <div class="cust-header">
-        <div class="cust-avatar" id="custInitials">SR</div>
-        <div>
-          <p class="cust-name" id="custName">Saman Rathnayake</p>
-          <p class="cust-nic" id="custNic">NIC: 198812345678</p>
-        </div>
-      </div>
-      <div class="points-row">
-        <span class="points-label"><i class="ti ti-trophy" style="font-size:15px;vertical-align:-2px;margin-right:5px" aria-hidden="true"></i>Current points</span>
-        <div>
-          <span class="points-value" id="custPoints">1,240</span>
-          <span class="points-unit">pts</span>
-        </div>
-      </div>
-      <div class="add-row">
-        <input type="number" placeholder="Points to add…" id="pointsInput" min="0" step="1" />
-        <button class="btn-add" onclick="addPts()"><i class="ti ti-plus" style="font-size:14px;vertical-align:-1px" aria-hidden="true"></i> Add</button>
-      </div>
-    </div>
-  </div>
-</div>
+    function handleAddPointsResponse(res) {
+      document.getElementById('addBtn').innerHTML = '<i class="fa-solid fa-plus me-1"></i> Add';
+      if(res.success) {
+        alert("Points සාර්ථකව එකතු කලා!");
+        document.getElementById('cPoints').innerText = res.newPoints;
+        document.getElementById('pointsToAdd').value = '';
+      } else {
+        alert("Points එකතු කිරීම අසාර්ථකයි.");
+      }
+    }
 
-<script>
-function goToDash() {
-  const u = document.getElementById('usernameInput').value;
-  const p = document.getElementById('passwordInput').value;
-  if (!u || !p) { alert('Enter username and password.'); return; }
-  document.getElementById('loginScreen').classList.remove('active');
-  document.getElementById('dashScreen').classList.add('active');
-}
-function goToLogin() {
-  document.getElementById('dashScreen').classList.remove('active');
-  document.getElementById('loginScreen').classList.add('active');
-  document.getElementById('custCard').style.display = 'none';
-}
-function showCustomer() {
-  const nic = document.getElementById('nicInput').value;
-  if (!nic) { alert('Enter a NIC number.'); return; }
-  document.getElementById('custNic').textContent = 'NIC: ' + nic;
-  document.getElementById('custCard').style.display = 'block';
-}
-function addPts() {
-  const pts = parseInt(document.getElementById('pointsInput').value) || 0;
-  if (!pts) { alert('Enter points to add.'); return; }
-  const cur = parseInt(document.getElementById('custPoints').textContent.replace(/,/g, '')) || 0;
-  document.getElementById('custPoints').textContent = (cur + pts).toLocaleString();
-  document.getElementById('pointsInput').value = '';
-}
-</script>
+    function sendRequest(url, callbackName) {
+      let script = document.createElement('script');
+      script.src = url + "&callback=" + callbackName + "&ts=" + new Date().getTime();
+      document.body.appendChild(script);
+      document.body.removeChild(script);
+    }
+
+    function login() {
+      var u = document.getElementById('user').value;
+      var p = document.getElementById('pass').value;
+      if(!u || !p) return alert("Username සහ Password ඇතුලත් කරන්න!");
+      
+      document.getElementById('loginBtn').innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Connecting...';
+      var url = API_URL + "?action=checkLogin&username=" + encodeURIComponent(u) + "&password=" + encodeURIComponent(p) + "&role=cashier";
+      sendRequest(url, "handleLoginResponse");
+    }
+
+    function startScanner() {
+      html5QrcodeScanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: {width: 220, height: 220} });
+      html5QrcodeScanner.render(onScanSuccess, onScanFailure);
+    }
+
+    function onScanSuccess(decodedText) {
+      document.getElementById('scannedNic').value = decodedText;
+      searchCustomer();
+    }
+    
+    function onScanFailure(error) { }
+
+    function searchCustomer() {
+      var nic = document.getElementById('scannedNic').value;
+      if(!nic) return alert("NIC එක ඇතුලත් කරන්න!");
+      
+      document.getElementById('findBtn').innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+      var url = API_URL + "?action=getCustomerDetails&nic=" + encodeURIComponent(nic);
+      sendRequest(url, "handleCustomerResponse");
+    }
+
+    function addPoints() {
+      var nic = document.getElementById('scannedNic').value;
+      var pts = document.getElementById('pointsToAdd').value;
+      if(!pts) return alert("Points ඇතුලත් කරන්න!");
+
+      document.getElementById('addBtn').innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+      var url = API_URL + "?action=addPoints&nic=" + encodeURIComponent(nic) + "&pointsToAdd=" + encodeURIComponent(pts);
+      sendRequest(url, "handleAddPointsResponse");
+    }
+  </script>
+</body>
+</html>
