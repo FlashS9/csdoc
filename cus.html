@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="si">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Winshopping Experience</title>
+  
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+      min-height: 100vh;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .glass-card {
+      background: rgba(255, 255, 255, 0.95);
+      color: #333;
+      backdrop-filter: blur(10px);
+      border-radius: 20px;
+      box-shadow: 0 15px 35px rgba(0,0,0,0.4);
+      overflow: hidden;
+      width: 100%;
+      max-width: 500px;
+    }
+
+    .hero-title {
+      font-size: 2.2rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, #f59e0b 0%, #ef4444 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .btn-custom {
+      background: linear-gradient(135deg, #ef4444 0%, #f59e0b 100%);
+      color: white;
+      font-weight: 700;
+      border-radius: 12px;
+      padding: 12px 30px;
+      border: none;
+      transition: all 0.3s ease;
+    }
+
+    .btn-custom:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 20px rgba(239, 68, 68, 0.4);
+      color: white;
+    }
+
+    .points-display {
+      font-size: 4.5rem;
+      font-weight: 800;
+      color: #10b981;
+      text-shadow: 0 4px 10px rgba(16, 185, 129, 0.2);
+      line-height: 1;
+    }
+
+    .info-badge {
+      background: #f1f5f9;
+      border-radius: 10px;
+      padding: 12px;
+      margin-bottom: 8px;
+      font-weight: 500;
+    }
+
+    .nav-pills .nav-link.active {
+      background-color: #ef4444;
+    }
+  </style>
+</head>
+<body class="p-3">
+
+  <div class="glass-card p-4 my-auto">
+    
+    <!-- 1. START LANDING PAGE -->
+    <div id="landingArea" class="text-center py-4">
+      <i class="fa-solid fa-gift fa-4x text-warning mb-3"></i>
+      <h1 class="hero-title mb-2">Winshopping Experience</h1>
+      <p class="text-muted mb-4">ඔබගේ Points එකතු කර වටිනා තෑගි සහ දීමනා දිනාගන්න!</p>
+      <button onclick="showAuth()" class="btn btn-custom btn-lg w-100 fs-5">
+        Try Now <i class="fa-solid fa-arrow-right ms-2"></i>
+      </button>
+    </div>
+
+    <!-- 2. REGISTER / LOGIN TABS AREA -->
+    <div id="authArea" style="display: none;">
+      <ul class="nav nav-pills nav-justified mb-4" id="pills-tab">
+        <li class="nav-item">
+          <button class="nav-link active fw-bold" id="pills-login-tab" data-bs-toggle="pill" data-bs-target="#pills-login">Login</button>
+        </li>
+        <li class="nav-item">
+          <button class="nav-link fw-bold" id="pills-reg-tab" data-bs-toggle="pill" data-bs-target="#pills-reg">Register</button>
+        </li>
+      </ul>
+
+      <div class="tab-content" id="pills-tabContent">
+        
+        <!-- LOGIN FORM -->
+        <div class="tab-pane fade show active" id="pills-login">
+          <div class="mb-3">
+            <label class="form-label text-muted fw-bold">Username</label>
+            <input type="text" id="loginUser" class="form-control" placeholder="Enter username">
+          </div>
+          <div class="mb-4">
+            <label class="form-label text-muted fw-bold">Password</label>
+            <input type="password" id="loginPass" class="form-control" placeholder="Enter password">
+          </div>
+          <button onclick="loginCustomer()" class="btn btn-custom w-100" id="loginBtn">Login</button>
+        </div>
+
+        <!-- REGISTER FORM -->
+        <div class="tab-pane fade" id="pills-reg">
+          <div class="mb-2">
+            <label class="form-label text-muted fw-bold mb-1">NIC Number (Your QR Code)</label>
+            <input type="text" id="regNic" class="form-control" placeholder="Enter NIC">
+          </div>
+          <div class="mb-2">
+            <label class="form-label text-muted fw-bold mb-1">Full Name</label>
+            <input type="text" id="regName" class="form-control" placeholder="Enter Full Name">
+          </div>
+          <div class="row mb-2">
+            <div class="col-6">
+              <label class="form-label text-muted fw-bold mb-1">Age</label>
+              <input type="number" id="regAge" class="form-control" placeholder="Age">
+            </div>
+            <div class="col-6">
+              <label class="form-label text-muted fw-bold mb-1">Gender</label>
+              <select id="regGender" class="form-select">
+                <option>Male</option>
+                <option>Female</option>
+              </select>
+            </div>
+          </div>
+          <div class="mb-2">
+            <label class="form-label text-muted fw-bold mb-1">Home Town</label>
+            <input type="text" id="regTown" class="form-control" placeholder="City / Town">
+          </div>
+          <div class="mb-2">
+            <label class="form-label text-muted fw-bold mb-1">Desired Username</label>
+            <input type="text" id="regUser" class="form-control" placeholder="Choose Username">
+          </div>
+          <div class="mb-3">
+            <label class="form-label text-muted fw-bold mb-1">Password</label>
+            <input type="password" id="regPass" class="form-control" placeholder="Choose Password">
+          </div>
+          <button onclick="registerCustomer()" class="btn btn-success w-100 fw-bold py-2" id="regBtn">Register Now</button>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- 3. CUSTOMER DASHBOARD AREA -->
+    <div id="dashboardArea" style="display: none;" class="text-center">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <span class="badge bg-danger fs-6">Customer Profile</span>
+        <button onclick="location.reload()" class="btn btn-sm btn-outline-secondary">Logout</button>
+      </div>
+
+      <p class="text-muted mb-1 fw-bold">TOTAL REWARD POINTS</p>
+      <!-- loku akuren point ganana -->
+      <div class="points-display mb-3" id="dashPoints">0</div>
+
+      <hr>
+
+      <!-- customer athulath karana wisthara -->
+      <h6 class="fw-bold text-start text-secondary mb-3">Personal Details</h6>
+      <div class="info-badge text-start"><i class="fa-solid fa-id-card text-danger me-2"></i><strong>NIC:</strong> <span id="dashNic"></span></div>
+      <div class="info-badge text-start"><i class="fa-solid fa-user text-primary me-2"></i><strong>Name:</strong> <span id="dashName"></span></div>
+      <div class="info-badge text-start"><i class="fa-solid fa-calendar text-warning me-2"></i><strong>Age:</strong> <span id="dashAge"></span></div>
+      <div class="info-badge text-start"><i class="fa-solid fa-venus-mars text-info me-2"></i><strong>Gender:</strong> <span id="dashGender"></span></div>
+      <div class="info-badge text-start"><i class="fa-solid fa-location-dot text-success me-2"></i><strong>Home Town:</strong> <span id="dashTown"></span></div>
+    </div>
+
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    // ⚠️ ඔයාගේ GOOGLE APPS SCRIPT WEB APP URL එක මෙතනට දාන්න (/exec)
+    const API_URL = "https://script.google.com/macros/s/AKfycbzlvRdso5M6_Cbt7Ygn6qxEEaxADnWbao_KZkcKy5kvVEu9dvX-ouk81DLtefgLhjWe/exec"; 
+
+    function showAuth() {
+      document.getElementById('landingArea').style.display = 'none';
+      document.getElementById('authArea').style.display = 'block';
+    }
+
+    function sendRequest(url, callbackName) {
+      let script = document.createElement('script');
+      script.src = url + "&callback=" + callbackName + "&ts=" + new Date().getTime();
+      document.body.appendChild(script);
+      document.body.removeChild(script);
+    }
+
+    // LOGIN RESPONSE
+    function handleCustomerLoginResponse(res) {
+      document.getElementById('loginBtn').innerText = "Login";
+      if(res.success) {
+        document.getElementById('authArea').style.display = 'none';
+        document.getElementById('dashboardArea').style.display = 'block';
+        
+        document.getElementById('dashPoints').innerText = res.points;
+        document.getElementById('dashNic').innerText = res.nic;
+        document.getElementById('dashName').innerText = res.name;
+        document.getElementById('dashAge').innerText = res.age;
+        document.getElementById('dashGender').innerText = res.gender;
+        document.getElementById('dashTown').innerText = res.hometown;
+      } else {
+        alert(res.message);
+      }
+    }
+
+    function loginCustomer() {
+      var u = document.getElementById('loginUser').value;
+      var p = document.getElementById('loginPass').value;
+      if(!u || !p) return alert("Username සහ Password ඇතුළත් කරන්න!");
+
+      document.getElementById('loginBtn').innerText = "Connecting...";
+      var url = API_URL + "?action=customerLogin&username=" + encodeURIComponent(u) + "&password=" + encodeURIComponent(p);
+      sendRequest(url, "handleCustomerLoginResponse");
+    }
+
+    // REGISTER RESPONSE
+    function handleRegisterResponse(res) {
+      document.getElementById('regBtn').innerText = "Register Now";
+      alert(res.message);
+      if(res.success) {
+        location.reload();
+      }
+    }
+
+    function registerCustomer() {
+      var nic = document.getElementById('regNic').value;
+      var name = document.getElementById('regName').value;
+      var age = document.getElementById('regAge').value;
+      var gender = document.getElementById('regGender').value;
+      var hometown = document.getElementById('regTown').value;
+      var username = document.getElementById('regUser').value;
+      var password = document.getElementById('regPass').value;
+
+      if(!nic || !name || !age || !hometown || !username || !password) {
+        return alert("සියලුම විස්තර පුරවන්න!");
+      }
+
+      document.getElementById('regBtn').innerText = "Processing...";
+      var url = API_URL + "?action=registerCustomer" +
+                "&nic=" + encodeURIComponent(nic) +
+                "&name=" + encodeURIComponent(name) +
+                "&age=" + encodeURIComponent(age) +
+                "&gender=" + encodeURIComponent(gender) +
+                "&hometown=" + encodeURIComponent(hometown) +
+                "&username=" + encodeURIComponent(username) +
+                "&password=" + encodeURIComponent(password);
+
+      sendRequest(url, "handleRegisterResponse");
+    }
+  </script>
+</body>
+</html>
