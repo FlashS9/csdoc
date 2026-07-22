@@ -161,7 +161,7 @@
     <div id="dashboardArea" style="display: none;" class="text-center">
       <div class="d-flex justify-content-between align-items-center mb-3">
         <span class="badge bg-danger fs-6">Customer Profile</span>
-        <button onclick="location.reload()" class="btn btn-sm btn-outline-secondary">Logout</button>
+        <button onclick="logoutCustomer()" class="btn btn-sm btn-outline-secondary">Logout</button>
       </div>
 
       <p class="text-muted mb-1 fw-bold">TOTAL REWARD POINTS</p>
@@ -184,82 +184,130 @@
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <script>
     // ⚠️ ඔයාගේ GOOGLE APPS SCRIPT WEB APP URL එක මෙතනට දාන්න (/exec)
-    const API_URL = "https://script.google.com/macros/s/AKfycbzlvRdso5M6_Cbt7Ygn6qxEEaxADnWbao_KZkcKy5kvVEu9dvX-ouk81DLtefgLhjWe/exec"; 
+const API_URL = "YOUR_APPS_SCRIPT_URL_HERE"; 
 
-    function showAuth() {
-      document.getElementById('landingArea').style.display = 'none';
-      document.getElementById('authArea').style.display = 'block';
+// Page එක load වෙද්දිම කලින් Login වෙලාද බලනවා (Auto-Login Check)
+window.onload = function() {
+  let savedUser = localStorage.getItem("loggedInCustomer");
+  if (savedUser) {
+    let userData = JSON.parse(savedUser);
+    showDashboard(userData);
+    
+    // Background එකෙන් අලුත්ම Points ගණන Google Sheet එකෙන් Sync කරගන්නවා
+    syncLatestPoints(userData.nic);
+  }
+};
+
+function showAuth() {
+  document.getElementById('landingArea').style.display = 'none';
+  document.getElementById('authArea').style.display = 'block';
+}
+
+function sendRequest(url, callbackName) {
+  let script = document.createElement('script');
+  script.src = url + "&callback=" + callbackName + "&ts=" + new Date().getTime();
+  document.body.appendChild(script);
+  document.body.removeChild(script);
+}
+
+// DASHBOARD එක පෙන්නන FUNCTION එක
+function showDashboard(userData) {
+  document.getElementById('landingArea').style.display = 'none';
+  document.getElementById('authArea').style.display = 'none';
+  document.getElementById('dashboardArea').style.display = 'block';
+
+  document.getElementById('dashPoints').innerText = userData.points;
+  document.getElementById('dashNic').innerText = userData.nic;
+  document.getElementById('dashName').innerText = userData.name;
+  document.getElementById('dashAge').innerText = userData.age;
+  document.getElementById('dashGender').innerText = userData.gender;
+  document.getElementById('dashTown').innerText = userData.hometown;
+}
+
+// LOGIN RESPONSE HANDLING
+function handleCustomerLoginResponse(res) {
+  document.getElementById('loginBtn').innerText = "Login";
+  if(res.success) {
+    // 1. Browser එකේ Data Save කරගන්නවා (Auto logout නොවීමට)
+    localStorage.setItem("loggedInCustomer", JSON.stringify(res));
+    
+    // 2. Dashboard එක පෙන්නනවා
+    showDashboard(res);
+  } else {
+    alert(res.message);
+  }
+}
+
+function loginCustomer() {
+  var u = document.getElementById('loginUser').value;
+  var p = document.getElementById('loginPass').value;
+  if(!u || !p) return alert("Username සහ Password ඇතුළත් කරන්න!");
+
+  document.getElementById('loginBtn').innerText = "Connecting...";
+  var url = API_URL + "?action=customerLogin&username=" + encodeURIComponent(u) + "&password=" + encodeURIComponent(p);
+  sendRequest(url, "handleCustomerLoginResponse");
+}
+
+// AUTO SYNC LATEST POINTS
+function syncLatestPoints(nic) {
+  var url = API_URL + "?action=getCustomerDetails&nic=" + encodeURIComponent(nic);
+  sendRequest(url, "handleSyncResponse");
+}
+
+function handleSyncResponse(res) {
+  if(res.success) {
+    document.getElementById('dashPoints').innerText = res.points;
+    // LocalStorage එකේ තියෙන points ප්‍රමාණයත් update කරනවා
+    let savedUser = JSON.parse(localStorage.getItem("loggedInCustomer"));
+    if(savedUser) {
+      savedUser.points = res.points;
+      localStorage.setItem("loggedInCustomer", JSON.stringify(savedUser));
     }
+  }
+}
 
-    function sendRequest(url, callbackName) {
-      let script = document.createElement('script');
-      script.src = url + "&callback=" + callbackName + "&ts=" + new Date().getTime();
-      document.body.appendChild(script);
-      document.body.removeChild(script);
-    }
+// LOGOUT FUNCTION (Customer Logout බටන් එක එබුවොත් විතරක්)
+function logoutCustomer() {
+  if(confirm("ඔබට Logout වීමට අවශ්‍යද?")) {
+    localStorage.removeItem("loggedInCustomer"); // Saved Data මකනවා
+    location.reload(); // Page එක Refresh කරනවා
+  }
+}
 
-    // LOGIN RESPONSE
-    function handleCustomerLoginResponse(res) {
-      document.getElementById('loginBtn').innerText = "Login";
-      if(res.success) {
-        document.getElementById('authArea').style.display = 'none';
-        document.getElementById('dashboardArea').style.display = 'block';
-        
-        document.getElementById('dashPoints').innerText = res.points;
-        document.getElementById('dashNic').innerText = res.nic;
-        document.getElementById('dashName').innerText = res.name;
-        document.getElementById('dashAge').innerText = res.age;
-        document.getElementById('dashGender').innerText = res.gender;
-        document.getElementById('dashTown').innerText = res.hometown;
-      } else {
-        alert(res.message);
-      }
-    }
+// REGISTER RESPONSE
+function handleRegisterResponse(res) {
+  document.getElementById('regBtn').innerText = "Register Now";
+  alert(res.message);
+  if(res.success) {
+    location.reload();
+  }
+}
 
-    function loginCustomer() {
-      var u = document.getElementById('loginUser').value;
-      var p = document.getElementById('loginPass').value;
-      if(!u || !p) return alert("Username සහ Password ඇතුළත් කරන්න!");
+function registerCustomer() {
+  var nic = document.getElementById('regNic').value;
+  var name = document.getElementById('regName').value;
+  var age = document.getElementById('regAge').value;
+  var gender = document.getElementById('regGender').value;
+  var hometown = document.getElementById('regTown').value;
+  var username = document.getElementById('regUser').value;
+  var password = document.getElementById('regPass').value;
 
-      document.getElementById('loginBtn').innerText = "Connecting...";
-      var url = API_URL + "?action=customerLogin&username=" + encodeURIComponent(u) + "&password=" + encodeURIComponent(p);
-      sendRequest(url, "handleCustomerLoginResponse");
-    }
+  if(!nic || !name || !age || !hometown || !username || !password) {
+    return alert("සියලුම විස්තර පුරවන්න!");
+  }
 
-    // REGISTER RESPONSE
-    function handleRegisterResponse(res) {
-      document.getElementById('regBtn').innerText = "Register Now";
-      alert(res.message);
-      if(res.success) {
-        location.reload();
-      }
-    }
+  document.getElementById('regBtn').innerText = "Processing...";
+  var url = API_URL + "?action=registerCustomer" +
+            "&nic=" + encodeURIComponent(nic) +
+            "&name=" + encodeURIComponent(name) +
+            "&age=" + encodeURIComponent(age) +
+            "&gender=" + encodeURIComponent(gender) +
+            "&hometown=" + encodeURIComponent(hometown) +
+            "&username=" + encodeURIComponent(username) +
+            "&password=" + encodeURIComponent(password);
 
-    function registerCustomer() {
-      var nic = document.getElementById('regNic').value;
-      var name = document.getElementById('regName').value;
-      var age = document.getElementById('regAge').value;
-      var gender = document.getElementById('regGender').value;
-      var hometown = document.getElementById('regTown').value;
-      var username = document.getElementById('regUser').value;
-      var password = document.getElementById('regPass').value;
-
-      if(!nic || !name || !age || !hometown || !username || !password) {
-        return alert("සියලුම විස්තර පුරවන්න!");
-      }
-
-      document.getElementById('regBtn').innerText = "Processing...";
-      var url = API_URL + "?action=registerCustomer" +
-                "&nic=" + encodeURIComponent(nic) +
-                "&name=" + encodeURIComponent(name) +
-                "&age=" + encodeURIComponent(age) +
-                "&gender=" + encodeURIComponent(gender) +
-                "&hometown=" + encodeURIComponent(hometown) +
-                "&username=" + encodeURIComponent(username) +
-                "&password=" + encodeURIComponent(password);
-
-      sendRequest(url, "handleRegisterResponse");
-    }
+  sendRequest(url, "handleRegisterResponse");
+}
   </script>
 </body>
 </html>
